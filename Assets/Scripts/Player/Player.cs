@@ -4,11 +4,13 @@ using UnityEngine;
 public class Player : Entity
 {
     public bool isBusy { get; private set; }
+    public bool isCrouching;
 
     [Header("Move Info")]
     public float runSpeed = 7f;
     public float jumpForce = 12f;
     public float wallJumpForce = 12f;
+    public float crouchWalkSpeed = 4f;
 
     #region States
     public PlayerStateMachine stateMachine { get; private set; }
@@ -19,6 +21,9 @@ public class Player : Entity
     public PlayerAirState airState { get; private set; }
     public PlayerWallSlideState wallSlide { get; private set; }
     public PlayerWallJumpState wallJump { get; private set; }
+    public PlayerLandState landState { get; private set; }
+    public PlayerCrouchState crouchState { get; private set; }
+    public PlayerCrouchWalkState crouchWalkState { get; private set; }
     #endregion
 
     protected override void Awake()
@@ -33,6 +38,9 @@ public class Player : Entity
         airState = new PlayerAirState(this, stateMachine, "Jump");
         wallSlide = new PlayerWallSlideState(this, stateMachine, "WallSlide");
         wallJump = new PlayerWallJumpState(this, stateMachine, "Jump");
+        landState = new PlayerLandState(this, stateMachine, "Land");
+        crouchState = new PlayerCrouchState(this, stateMachine, "Crouch");
+        crouchWalkState = new PlayerCrouchWalkState(this, stateMachine, "CrouchWalk");
     }
 
     protected override void Start()

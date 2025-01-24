@@ -9,6 +9,7 @@ public class PlayerIdleState : PlayerGroundedState
         base.Enter();
 
         player.SetZeroVelocity();
+        player.isCrouching = false;
     }
 
     public override void Exit()

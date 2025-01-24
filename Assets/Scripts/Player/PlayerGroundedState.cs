@@ -25,5 +25,10 @@ public class PlayerGroundedState : PlayerState
 
         if (Input.GetKeyDown(KeyCode.Space) && player.IsGroundDetected())
             stateMachine.ChangeState(player.jumpState);
+
+        if (Input.GetKeyDown(KeyCode.LeftControl) && player.IsGroundDetected() && !player.isCrouching)
+            stateMachine.ChangeState(player.crouchState);
+        else if (Input.GetKeyDown(KeyCode.LeftControl) && player.IsGroundDetected() && player.isCrouching)
+            stateMachine.ChangeState(player.idleState);
     }
 }
