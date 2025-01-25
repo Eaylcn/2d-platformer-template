@@ -12,6 +12,19 @@ public class Player : Entity
     public float wallJumpForce = 12f;
     public float crouchWalkSpeed = 4f;
 
+    [Header("Crouch Settings")]
+    [SerializeField] private Vector2 standingSize = new Vector2(0.85f, 1.84f);
+    [SerializeField] private Vector2 crouchingSize = new Vector2(1f, 1f);
+    [SerializeField] private Vector2 standingColliderPosition = new Vector2(-0.05f, -0.07f);
+    [SerializeField] private Vector2 crouchingColliderPosition = new Vector2(0f, -0.5f);
+    private CapsuleCollider2D mainCollider;
+
+    [Header("Check References")]
+    [SerializeField] protected Transform crouchTopFloorCheck;
+    [SerializeField] protected Vector2 defaultWallCheckPosition;
+    [SerializeField] protected Vector2 crouchingWallCheckPosition;
+    [SerializeField] protected float crouchTopFloorCheckDistance = .8f;
+
     #region States
     public PlayerStateMachine stateMachine { get; private set; }
 
@@ -24,11 +37,14 @@ public class Player : Entity
     public PlayerLandState landState { get; private set; }
     public PlayerCrouchState crouchState { get; private set; }
     public PlayerCrouchWalkState crouchWalkState { get; private set; }
+    public PlayerDeathState deathState { get; private set; }
     #endregion
 
     protected override void Awake()
     {
         base.Awake();
+
+        mainCollider = GetComponent<CapsuleCollider2D>();
 
         stateMachine = new PlayerStateMachine();
 
@@ -41,6 +57,7 @@ public class Player : Entity
         landState = new PlayerLandState(this, stateMachine, "Land");
         crouchState = new PlayerCrouchState(this, stateMachine, "Crouch");
         crouchWalkState = new PlayerCrouchWalkState(this, stateMachine, "CrouchWalk");
+        deathState = new PlayerDeathState(this, stateMachine, "Death");
     }
 
     protected override void Start()
@@ -58,6 +75,8 @@ public class Player : Entity
         base.Update();
 
         stateMachine.currentState.Update();
+        ColliderUpdate();
+        WallCheckPositionUpdate();
     }
 
     public IEnumerator BusyFor(float _seconds)
@@ -68,4 +87,28 @@ public class Player : Entity
 
         isBusy = false;
     }
+
+
+    #region Collision
+
+    public void ColliderUpdate()
+    {
+        mainCollider.size = isCrouching ? crouchingSize : standingSize;
+        mainCollider.offset = isCrouching ? crouchingColliderPosition : standingColliderPosition;
+    }
+
+    public void WallCheckPositionUpdate()
+    {
+        wallCheck.localPosition = isCrouching ? crouchingWallCheckPosition : defaultWallCheckPosition;
+    }
+
+    public virtual bool IsCrouchTopFloorDetected() => Physics2D.Raycast(crouchTopFloorCheck.position, Vector2.up, groundCheckDistance, whatIsGround);
+
+    protected override void OnDrawGizmos()
+    {
+        base.OnDrawGizmos();
+        Gizmos.DrawLine(crouchTopFloorCheck.position, new Vector2(crouchTopFloorCheck.position.x, crouchTopFloorCheck.position.y + crouchTopFloorCheckDistance));
+    }
+
+    #endregion
 }

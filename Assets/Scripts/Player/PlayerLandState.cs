@@ -22,6 +22,6 @@ public class PlayerLandState : PlayerState
     {
         base.Exit();
 
-        player.StartCoroutine("BusyFor", .25f);
+        player.StartCoroutine("BusyFor", .15f);
     }
 }
