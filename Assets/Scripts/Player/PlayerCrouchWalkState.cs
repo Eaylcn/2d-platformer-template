@@ -7,10 +7,12 @@ public class PlayerCrouchWalkState : PlayerGroundedState
     {
         base.Enter();
     }
+
     public override void Exit()
     {
         base.Exit();
     }
+
     public override void Update()
     {
         base.Update();

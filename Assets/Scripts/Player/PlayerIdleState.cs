@@ -9,7 +9,8 @@ public class PlayerIdleState : PlayerGroundedState
         base.Enter();
 
         player.SetZeroVelocity();
-        player.isCrouching = false;
+        player.ClearModes();
+        player.ColliderUpdate();
     }
 
     public override void Exit()
@@ -24,8 +25,13 @@ public class PlayerIdleState : PlayerGroundedState
         if (xInput == player.facingDir && player.IsWallDetected())
             return;
 
-        if (xInput != 0 && !player.isBusy)
+        if (xInput != 0 && !player.isBusy && !player.isWalking)
             stateMachine.ChangeState(player.runState);
+        else if (xInput != 0 && !player.isBusy && player.isWalking)
+            stateMachine.ChangeState(player.walkState);
+
+        if (player.IsCrouchTopFloorDetected())
+            stateMachine.ChangeState(player.crouchState);
 
     }
 }

@@ -8,6 +8,7 @@ public class PlayerLandState : PlayerState
         base.Enter();
 
         player.SetZeroVelocity();
+        xInput = 0;
     }
     public override void Update()
     {

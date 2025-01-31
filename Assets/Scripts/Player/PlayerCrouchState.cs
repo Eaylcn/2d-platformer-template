@@ -9,6 +9,7 @@ public class PlayerCrouchState : PlayerGroundedState
 
         player.SetZeroVelocity();
         player.isCrouching = true;
+        player.ColliderUpdate();
     }
     public override void Update()
     {
@@ -24,5 +25,7 @@ public class PlayerCrouchState : PlayerGroundedState
     public override void Exit()
     {
         base.Exit();
+
+        player.ClearModes();
     }
 }

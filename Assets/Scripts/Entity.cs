@@ -11,9 +11,11 @@ public class Entity : MonoBehaviour
 
     [Header("Collision Info")]
     [SerializeField] protected Transform groundCheck;
+    [SerializeField] protected Vector2 groundCheckSize = new Vector2(0.5f, 0.1f);
     [SerializeField] protected float groundCheckDistance = 1;
     [SerializeField] protected Transform wallCheck;
-    [SerializeField] protected float wallCheckDistance = .8f;
+    [SerializeField] protected Vector2 wallCheckSize = new Vector2(0.5f, 0.5f);
+    [SerializeField] protected float wallCheckDistance = 0.8f;
     [SerializeField] protected LayerMask whatIsGround;
 
     public int facingDir { get; private set; } = 1;
@@ -21,10 +23,7 @@ public class Entity : MonoBehaviour
 
     public System.Action onFlipped;
 
-    protected virtual void Awake()
-    {
-
-    }
+    protected virtual void Awake() { }
 
     protected virtual void Start()
     {
@@ -34,32 +33,58 @@ public class Entity : MonoBehaviour
         cd = GetComponent<CapsuleCollider2D>();
     }
 
-    protected virtual void Update()
-    {
-
-    }
+    protected virtual void Update() { }
 
     #region Velocity
-    public void SetZeroVelocity()
+    public void SetZeroVelocity() => rb.velocity = Vector2.zero;
+
+    public void SetVelocity(float xVelocity, float yVelocity)
     {
-        rb.velocity = new Vector2(0, 0);
+        rb.velocity = new Vector2(xVelocity, yVelocity);
+        FlipController(xVelocity);
     }
 
-    public void SetVelocity(float _xVelocity, float _yVelocity)
-    {
-        rb.velocity = new Vector2(_xVelocity, _yVelocity);
-        FlipController(_xVelocity);
-    }
+    public void SetVelocityNoFlip(float x, float y) => rb.velocity = new Vector2(x, y);
     #endregion
 
     #region Collision
-    public virtual bool IsGroundDetected() => Physics2D.Raycast(groundCheck.position, Vector2.down, groundCheckDistance, whatIsGround);
-    public virtual bool IsWallDetected() => Physics2D.Raycast(wallCheck.position, Vector2.right * facingDir, wallCheckDistance, whatIsGround);
+    public virtual bool IsGroundDetected()
+    {
+        RaycastHit2D hit = Physics2D.BoxCast(
+            groundCheck.position,
+            groundCheckSize,
+            0,
+            Vector2.down,
+            groundCheckDistance,
+            whatIsGround
+        );
+        return hit.collider != null;
+    }
+
+    public virtual bool IsWallDetected()
+    {
+        RaycastHit2D hit = Physics2D.BoxCast(
+            wallCheck.position,
+            wallCheckSize,
+            0,
+            Vector2.right * facingDir,
+            wallCheckDistance,
+            whatIsGround
+        );
+        return hit.collider != null;
+    }
 
     protected virtual void OnDrawGizmos()
     {
-        Gizmos.DrawLine(groundCheck.position, new Vector2(groundCheck.position.x, groundCheck.position.y - groundCheckDistance));
-        Gizmos.DrawLine(wallCheck.position, new Vector2(wallCheck.position.x + wallCheckDistance * facingDir, wallCheck.position.y));
+        // Ground Check Gizmos
+        Gizmos.color = Color.green;
+        Vector3 groundBoxCenter = groundCheck.position + Vector3.down * groundCheckDistance;
+        Gizmos.DrawWireCube(groundBoxCenter, new Vector3(groundCheckSize.x, groundCheckSize.y));
+
+        // Wall Check Gizmos
+        Gizmos.color = Color.blue;
+        Vector3 wallBoxCenter = wallCheck.position + (Vector3)(Vector2.right * facingDir * wallCheckDistance);
+        Gizmos.DrawWireCube(wallBoxCenter, new Vector3(wallCheckSize.x, wallCheckSize.y));
     }
     #endregion
 
@@ -68,24 +93,19 @@ public class Entity : MonoBehaviour
     {
         facingDir *= -1;
         facingRight = !facingRight;
-        transform.Rotate(0.0f, 180.0f, 0.0f);
-
-        if (onFlipped != null)
-            onFlipped();
+        transform.Rotate(0, 180, 0);
+        onFlipped?.Invoke();
     }
 
-    public virtual void SetupDefaultFacingDirection(int _facingDir)
+    public virtual void SetupDefaultFacingDirection(int facingDir)
     {
-        facingDir = _facingDir;
-        if (facingDir == -1)
-            facingRight = false;
+        this.facingDir = facingDir;
+        facingRight = facingDir == 1;
     }
 
-    public virtual void FlipController(float _x)
+    public virtual void FlipController(float xInput)
     {
-        if (_x > 0 && !facingRight)
-            Flip();
-        else if (_x < 0 && facingRight)
+        if ((xInput > 0 && !facingRight) || (xInput < 0 && facingRight))
             Flip();
     }
     #endregion

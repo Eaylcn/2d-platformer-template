@@ -7,6 +7,9 @@ public class PlayerAirState : PlayerState
     public override void Enter()
     {
         base.Enter();
+
+        player.ClearModes();
+        player.ColliderUpdate();
     }
 
     public override void Exit()

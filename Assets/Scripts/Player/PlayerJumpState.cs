@@ -8,7 +8,10 @@ public class PlayerJumpState : PlayerState
     {
         base.Enter();
 
-        player.SetVelocity(rb.velocity.x, player.jumpForce);
+        player.ClearModes();
+        xInput = 0;
+
+        player.SetVelocity(player.rb.velocity.x, player.jumpForce);
     }
 
     public override void Exit()
